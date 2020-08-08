@@ -207,7 +207,8 @@ class VectrixUtils:
                 with open(scan_file) as f:
                     data = json.load(f)
                 return data
-        # TODO RETRIEVE LAST SCAN RESULTS FROM PRODUCTION
+        else:
+            return self.__get_vectrix_platform("/v1/scan/get")
 
     def get_inputs(self):
         """
