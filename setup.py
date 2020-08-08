@@ -8,7 +8,7 @@ setup(
     author='Matthew Lewis',
     author_email='matthew.lewis@vectrix.io',
     url='https://github.com/VectrixSecurity/Vectrix-Python',
-    download_url='https://github.com/VectrixSecurity/Vectrix-Python/archive/v_010.tar.gz',
+    download_url='https://github.com/VectrixSecurity/Vectrix-Python/archive/v0.1.0.tar.gz',
     keywords=['vectrix', 'vectrixio', 'vectrix.io', 'vectrix module'],
     install_requires=[
         'requests==2.22.0',
