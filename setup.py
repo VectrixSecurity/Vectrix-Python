@@ -2,13 +2,13 @@ from distutils.core import setup
 setup(
     name='vectrix',
     packages=['vectrix'],
-    version='0.1.1',
+    version='0.1.2',
     license='MIT',
     description='Vectrix Developer Python Package',
     author='Matthew Lewis',
     author_email='matthew.lewis@vectrix.io',
     url='https://github.com/VectrixSecurity/Vectrix-Python',
-    download_url='https://github.com/VectrixSecurity/Vectrix-Python/archive/v0.1.1.tar.gz',
+    download_url='https://github.com/VectrixSecurity/Vectrix-Python/archive/v0.1.2.tar.gz',
     keywords=['vectrix', 'vectrixio', 'vectrix.io', 'vectrix module'],
     install_requires=[
         'requests==2.22.0',
@@ -16,7 +16,7 @@ setup(
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
-        'Intended Audience :: Vectrix Developers',
+        'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
