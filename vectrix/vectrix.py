@@ -1,6 +1,6 @@
 """Vectrix Module Utilities"""
-import requests  # TODO ADD requests library as a requirement
-import boto3  # TODO ADD boto3 library as a requirement
+import requests
+import boto3
 import os
 import json
 import logging
@@ -15,7 +15,7 @@ class VectrixUtils:
             print("**** Vectrix Module is in local development mode ****")
             self.__init_development_mode()
             logging.basicConfig(
-                filename=(os.getcwd() + '/.vectrix/vectrix-module.log'), level=logging.DEBUG)
+                filename=(os.getcwd() + '/.vectrix/vectrix-module.log'), level=logging.WARNING)  # TODO Test logging level change with .error and .warning
         else:
             self.deployment_id = os.environ.get('DEPLOYMENT_ID')
             self.deployment_key = os.environ.get('DEPLOYMENT_KEY')
@@ -149,11 +149,11 @@ class VectrixUtils:
         if self.production_mode is False:
             print("(DEV MODE) Vectrix Module Output:")
             print("**** ASSETS ****")
-            print(assets)
+            print(json.dumps(assets))
             print("**** ISSUES ****")
-            print(issues)
+            print(json.dumps(issues))
             print("**** EVENTS ****")
-            print(events)
+            print(json.dumps(events))
             self.__dev_hold_last_scan_results(
                 {"assets": assets, "issues": issues, "events": events})
         else:
@@ -231,7 +231,7 @@ class VectrixUtils:
         :returns: (No return)
         """
         if self.production_mode is False:
-            logging.debug("VECTRIX LOG (INTERNAL): " + message)
+            logging.warning("VECTRIX LOG (INTERNAL): " + message)
         else:
             self.__post_vectrix_platform(
                 endpoint="/v1/log/internal", data={"message": message})
@@ -244,7 +244,7 @@ class VectrixUtils:
         :returns: (No return)
         """
         if self.production_mode is False:
-            logging.debug("VECTRIX LOG (EXTERNAL): " + message)
+            logging.warning("VECTRIX LOG (EXTERNAL): " + message)
         else:
             self.__post_vectrix_platform(
                 endpoint="/v1/log/external", data={"message": message})
