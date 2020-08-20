@@ -74,7 +74,7 @@ class VectrixUtils:
         """
         try:
             response = requests.get(
-                self.vectrix_platform + endpoint, headers=self.auth_headers, timeout=10)
+                self.vectrix_platform + endpoint, headers=self.auth_headers, timeout=360)
             return response.json()
         except Exception as e:
             logging.error("Failed GET'ing data at {endpoint} on Vectrix Platform...".format(
@@ -88,13 +88,70 @@ class VectrixUtils:
         """
         try:
             response = requests.post(
-                self.vectrix_platform + endpoint, json=data, headers=self.auth_headers, timeout=10)
+                self.vectrix_platform + endpoint, json=data, headers=self.auth_headers, timeout=3600)
             return response.json()
         except Exception as e:
             logging.error("Failed POST'ing data at {endpoint} on Vectrix Platform...".format(
                 endpoint=endpoint))
             logging.error(str(traceback.format_exc()))
             return None
+
+    def __output_type_check(self, assets, issues, events):
+        if not isinstance(assets, list) or not isinstance(issues, list) or not isinstance(events, list):
+            raise ValueError(
+                "output requires 3 keyword argument list type parameters: assets, issues, events")
+        if not isinstance(assets[0], dict) or not isinstance(issues[0], dict) or not isinstance(events[0], dict):
+            raise ValueError(
+                "output requires assets, issues, and events to be list of dicts")
+
+        test_assets = True if assets else False
+        test_issues = True if issues else False
+        test_events = True if events else False
+        tests = [test_assets, test_issues, test_events]
+        test_items = []
+        test_items.append(assets[0] if assets else False)
+        test_items.append(issues[0] if issues else False)
+        test_items.append(events[0] if events else False)
+        test_elems = {
+            "asset": [
+                {"key": "type", "val": "str"},
+                {"key": "id", "val": "str"},
+                {"key": "display_name", "val": "str"},
+                {"key": "metadata", "val": {}}
+            ],
+            "issue": [
+                {"key": "issue", "val": "str"},
+                {"key": "asset_id", "val": []},
+                {"key": "metadata", "val": {}}
+            ],
+            "event": [
+                {"key": "event", "val": "str"},
+                {"key": "event_time", "val": 1},
+                {"key": "display_name", "val": "str"},
+                {"key": "metadata", "val": {}}
+            ]
+        }
+        for index, test in enumerate(tests):
+            if test:
+                dict_type = ["asset", "issue", "event"]
+                msg = dict_type[index]
+                for elem in test_elems[msg]:
+                    if elem['key'] in test_items[index]:
+                        if not isinstance(test_items[index][elem['key']], type(elem['val'])):
+                            raise ValueError(
+                                "{msg} dict key '{key}' value needs to be {val}".format(msg=msg, key=elem['key'], val=type(elem['val']).__name__))
+                    else:
+                        raise ValueError(
+                            "{msg} dict requires '{key}' key. Information: https://developer.vectrix.io/module-development/module-output".format(msg=msg, key=elem['key']))
+
+        inputted_asset_ids = []
+        for asset in assets:
+            inputted_asset_ids.append(asset['id'])
+        for issue in issues:
+            for asset in issue['asset_id']:
+                if asset not in inputted_asset_ids:
+                    raise ValueError(
+                        "Vectrix issue ({issue}) references non-existent asset: {asset}".format(issue=issue['issue'], asset=asset))
 
     def get_state(self):
         """
@@ -113,7 +170,7 @@ class VectrixUtils:
         :returns: dict containing current state.
         """
         if not isinstance(new_state, dict):
-            raise TypeError("set_state requires dict type parameter")
+            raise ValueError("set_state requires dict type parameter")
 
         merged_state = self.state.copy()
         merged_state.update(new_state)
@@ -123,13 +180,16 @@ class VectrixUtils:
             self.__dev_hold_local_state(merged_state)
         return merged_state
 
-    def unset_state(self, key):
+    def unset_state(self, key: str):
         """
         unset_state will remove a key from the current state
 
         :params: (String) key to be removed from state
         :returns: (No return)
         """
+        if not isinstance(key, str):
+            raise ValueError(
+                "unset_state requires str type parameter containing log message")
         self.state.pop(key, None)
         if self.production_mode is False:
             self.__dev_hold_local_state(self.state)
@@ -143,9 +203,7 @@ class VectrixUtils:
         :params: events (list) - Keyword argument of the events identified during a scan.
         :returns: (No return)
         """
-        if not isinstance(assets, list) or not isinstance(issues, list) or not isinstance(events, list):
-            raise TypeError(
-                "output requires 3 keyword argument list type parameters: assets, issues, events")
+        self.__output_type_check(assets, issues, events)
         if self.production_mode is False:
             print("(DEV MODE) Vectrix Module Output:")
             print("**** ASSETS ****")
@@ -230,6 +288,9 @@ class VectrixUtils:
         :param: String for log message
         :returns: (No return)
         """
+        if not isinstance(message, str):
+            raise ValueError(
+                "log requires str type parameter containing log message")
         if self.production_mode is False:
             logging.warning("VECTRIX LOG (INTERNAL): " + message)
         else:
@@ -243,6 +304,9 @@ class VectrixUtils:
         :param: String for log message
         :returns: (No return)
         """
+        if not isinstance(message, str):
+            raise ValueError(
+                "external_log requires str type parameter containing log message")
         if self.production_mode is False:
             logging.warning("VECTRIX LOG (EXTERNAL): " + message)
         else:
@@ -256,6 +320,9 @@ class VectrixUtils:
         :param: String for error message
         :returns: (No return)
         """
+        if not isinstance(error, str):
+            raise ValueError(
+                "error requires str type parameter containing error message")
         if self.production_mode is False:
             logging.error("VECTRIX ERROR (INTERNAL): " + error)
         else:
@@ -269,6 +336,9 @@ class VectrixUtils:
         :param: String for error message
         :returns: (No return)
         """
+        if not isinstance(error, str):
+            raise ValueError(
+                "external_error requires str type parameter containing error message")
         if self.production_mode is False:
             logging.error("VECTRIX ERROR (EXTERNAL): " + error)
         else:
