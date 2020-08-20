@@ -100,18 +100,22 @@ class VectrixUtils:
         if not isinstance(assets, list) or not isinstance(issues, list) or not isinstance(events, list):
             raise ValueError(
                 "output requires 3 keyword argument list type parameters: assets, issues, events")
-        if not isinstance(assets[0], dict) or not isinstance(issues[0], dict) or not isinstance(events[0], dict):
-            raise ValueError(
-                "output requires assets, issues, and events to be list of dicts")
 
-        test_assets = True if assets else False
-        test_issues = True if issues else False
-        test_events = True if events else False
-        tests = [test_assets, test_issues, test_events]
         test_items = []
         test_items.append(assets[0] if assets else False)
         test_items.append(issues[0] if issues else False)
         test_items.append(events[0] if events else False)
+        test_assets = True if assets else False
+        test_issues = True if issues else False
+        test_events = True if events else False
+        tests = [test_assets, test_issues, test_events]
+
+        for index, check in enumerate(tests):
+            if check:
+                if not isinstance(test_items[index], dict):
+                    raise ValueError(
+                        "output requires assets, issues, and events to be list of dicts")
+
         test_elems = {
             "asset": [
                 {"key": "type", "val": "str"},
