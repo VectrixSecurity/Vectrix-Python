@@ -97,30 +97,20 @@ class VectrixUtils:
             return None
 
     def __output_type_check(self, assets, issues, events):
+        """
+        Verify a vectrix.output() call to ensure all submitted data correctly falls within the guidelines and if not,
+        will return an exception.
+        """
         if not isinstance(assets, list) or not isinstance(issues, list) or not isinstance(events, list):
             raise ValueError(
                 "output requires 3 keyword argument list type parameters: assets, issues, events")
-
-        test_items = []
-        test_items.append(assets[0] if assets else False)
-        test_items.append(issues[0] if issues else False)
-        test_items.append(events[0] if events else False)
-        test_assets = True if assets else False
-        test_issues = True if issues else False
-        test_events = True if events else False
-        tests = [test_assets, test_issues, test_events]
-
-        for index, check in enumerate(tests):
-            if check:
-                if not isinstance(test_items[index], dict):
-                    raise ValueError(
-                        "output requires assets, issues, and events to be list of dicts")
 
         test_elems = {
             "asset": [
                 {"key": "type", "val": "str"},
                 {"key": "id", "val": "str"},
                 {"key": "display_name", "val": "str"},
+                {"key": "link", "val": "str", "optional": True},
                 {"key": "metadata", "val": {}}
             ],
             "issue": [
@@ -135,27 +125,157 @@ class VectrixUtils:
                 {"key": "metadata", "val": {}}
             ]
         }
-        for index, test in enumerate(tests):
-            if test:
-                dict_type = ["asset", "issue", "event"]
-                msg = dict_type[index]
-                for elem in test_elems[msg]:
-                    if elem['key'] in test_items[index]:
-                        if not isinstance(test_items[index][elem['key']], type(elem['val'])):
-                            raise ValueError(
-                                "{msg} dict key '{key}' value needs to be {val}".format(msg=msg, key=elem['key'], val=type(elem['val']).__name__))
-                    else:
-                        raise ValueError(
-                            "{msg} dict requires '{key}' key. Information: https://developer.vectrix.io/module-development/module-output".format(msg=msg, key=elem['key']))
 
-        inputted_asset_ids = []
+        test_items = {
+            "asset": assets,
+            "issue": issues,
+            "event": events
+        }
+
+        for key in test_items:
+            for item in test_items[key]:
+                for elem in test_elems[key]:
+                    if elem['key'] in item:
+                        if not isinstance(item[elem['key']], type(elem['val'])):
+                            raise ValueError(
+                                "{msg} dict key '{key}' value needs to be {val}".format(msg=key, key=elem['key'], val=type(elem['val']).__name__))
+                        if elem['key'] == 'link':
+                            self.__link_check(item[elem['key']])
+                        if elem['key'] == "metadata":
+                            metadata = item['metadata']
+                            metadata_keys_to_check = [
+                                {"key": "priority", "val": 1},
+                                {"key": "value", "val": "str"},
+                                {"key": "link", "val": "str"}
+                            ]
+                            metadata_keys = ["priority", "value", "link"]
+                            for metadata_key in metadata:
+                                if not isinstance(metadata[metadata_key], type({})):
+                                    raise ValueError("metadata element '{key}' value needs to be {val}. Information: https://developer.vectrix.io/module-development/module-output".format(
+                                        key=metadata_key, val=type({}).__name__))
+                                for check_key in metadata_keys_to_check:
+                                    if check_key['key'] not in metadata[metadata_key] and check_key['key'] != "link":
+                                        raise ValueError(
+                                            "all metadata elements are required to have '{key}' key. Information: https://developer.vectrix.io/module-development/module-output".format(key=check_key['key']))
+                                    if check_key['key'] != "link" and not isinstance(metadata[metadata_key][check_key['key']], type(check_key['val'])):
+                                        raise ValueError(
+                                            "metadata element {elem} key '{key}' value needs to be {val}".format(elem=metadata_key, key=check_key['key'], val=type(check_key['val']).__name__))
+
+                                for inputted_key in metadata[metadata_key]:
+                                    if inputted_key not in metadata_keys:
+                                        raise ValueError(
+                                            "metadata element isn't allowed to have '{key}' key. Only keys permitted: {allowed_keys}. Information: https://developer.vectrix.io/module-development/module-output".format(key=inputted_key, allowed_keys=str(metadata_keys)))
+                            self.__metadata_deep_check(metadata)
+                    elif 'optional' not in elem or elem['optional'] is not True:
+                        raise ValueError(
+                            "{msg} dict requires '{key}' key. Information: https://developer.vectrix.io/module-development/module-output".format(msg=key, key=elem['key']))
+                    else:
+                        pass  # The key is optional, pass.
+
+        inputted_asset_ids = {}
         for asset in assets:
-            inputted_asset_ids.append(asset['id'])
+            self.__asset_type_check(asset)
+            if asset['id'] in inputted_asset_ids:
+                raise ValueError(
+                    "Duplicate asset id entry '{asset_id}'. All asset id's are required to be unique. Information: https://developer.vectrix.io/module-development/module-output".format(asset_id=asset['id']))
+            else:
+                inputted_asset_ids[asset['id']] = asset
         for issue in issues:
             for asset in issue['asset_id']:
                 if asset not in inputted_asset_ids:
                     raise ValueError(
                         "Vectrix issue ({issue}) references non-existent asset: {asset}".format(issue=issue['issue'], asset=asset))
+
+    def __metadata_deep_check(self, metadata):
+        """
+        This will check each metadata element to confirm it correctly abides by:
+        1 - Metadata Naming Convention guidelines
+        2 - Metadata 'priority' key guidelines
+        3 - Metadata 'link' key guidelines
+        """
+        keys = metadata.keys()
+        for key in keys:
+            """
+            Naming Convention:
+            - No Spaces
+            - No Uppercase
+            - No Hyphens
+            - Only lowercase
+            - Underscores for new words
+            """
+            if " " in key:
+                raise ValueError(
+                    "metadata keys aren't allowed to have spaces. Violated on key '{key}'. Information:  https://developer.vectrix.io/module-development/module-output".format(key=key))
+            if "-" in key:
+                raise ValueError(
+                    "metadata keys aren't allowed to have hyphens. Violated on key '{key}'. Information:  https://developer.vectrix.io/module-development/module-output".format(key=key))
+            for char in key:
+                if char.isupper():
+                    raise ValueError(
+                        "metadata keys can't have uppercase characters. Violated on key '{key}'. Information:  https://developer.vectrix.io/module-development/module-output".format(key=key))
+            p_val = metadata[key]['priority']
+            if p_val > 100 or p_val < -1:
+                raise ValueError(
+                    "metadata 'priority' key is only allowed to be between -1 and 100 (inclusive). Violated on key '{key}' with priority value '{val}'. Information:  https://developer.vectrix.io/module-development/module-output".format(key=key, val=p_val))
+            if 'link' in metadata[key]:
+                if "http://" == metadata[key]['link'][:7]:
+                    raise ValueError(
+                        "Only secure links are allowed in metadata elements (HTTPS). Violated on key '{key}'. Information:  https://developer.vectrix.io/module-development/module-output".format(key=key))
+                if "https://" != metadata[key]['link'][:8]:
+                    raise ValueError(
+                        "Only https links are allowed to be included in metadata elements. Violated on key '{key}'. Information:  https://developer.vectrix.io/module-development/module-output".format(key=key))
+
+    def __asset_type_check(self, asset):
+        """
+        Verify asset 'type' key abides by naming convention standards.
+
+        Naming Convention Rules:
+        - Asset Types are broken into three categories: <vendor>_<service>_<resource>
+            - Example: aws_s3_bucket, gcp_iam_user, github_repository (service ommitted as there isn't any)
+            - Always use common abbreviations for a service if there are an any.
+            - For multiple words, only use camelCase. This is only allowed for services and resources.
+            - For vendors, always use lowercase. Even if the vendor might capitalize their own name in parts. use 'github' instead of GitHub.
+        Assets Types aren't allowed to have:
+            - Spaces.
+            - Hyphens.
+            - Uppercase first words.
+            - No less than vendor + resource.
+            - No more than vendor + service + resource.
+        """
+        asset_type = asset['type']
+        if " " in asset_type:
+            raise ValueError(
+                "asset types aren't allowed to have spaces. Violated on asset type '{type}'. Information:  https://developer.vectrix.io/module-development/module-output".format(type=asset_type))
+        if "-" in asset_type:
+            raise ValueError(
+                "asset types aren't allowed to have hyphens. Violated on asset type '{type}'. Information:  https://developer.vectrix.io/module-development/module-output".format(type=asset_type))
+        if "_" not in asset_type:
+            raise ValueError(
+                "asset types require at least a vendor and a resource specification following snake case (ex. github_repo). Violated on asset type '{type}'. Standard asset type structure is (vendor_service_resource). Information:  https://developer.vectrix.io/module-development/module-output".format(type=asset_type))
+        split_asset_type = asset_type.split("_")
+        if len(split_asset_type) > 3:
+            raise ValueError(
+                "asset types are only allowed to follow the structure: (vendor_service_resource) (ex. aws_s3_bucket) (service only applies where available). Violated on asset type '{type}'. Information:  https://developer.vectrix.io/module-development/module-output".format(type=asset_type))
+        for index, word in enumerate(split_asset_type):
+            if len(word) < 2:
+                raise ValueError(
+                    "asset types need to have at least two characters per vendor, service, resource instantiantion (ex. aws_s3_bucket). Violated on asset type '{type}'. Information:  https://developer.vectrix.io/module-development/module-output".format(type=asset_type))
+            if index == 0:
+                for char in word:
+                    if char.isupper():
+                        raise ValueError(
+                            "asset type vendor instantiation is required to be all lowercase. (ex. aws_iam_role). Violated on asset type '{type}'. Information:  https://developer.vectrix.io/module-development/module-output".format(type=asset_type))
+            if word[0].isupper():
+                raise ValueError(
+                    "asset type service and resource instantiations are required to follow camelCase for multiple words. (ex. aws_iam_accessKey). Violated on asset type '{type}'. Information:  https://developer.vectrix.io/module-development/module-output".format(type=asset_type))
+
+    def __link_check(self, link):
+        if "http://" == link[:7]:
+            raise ValueError(
+                "Only secure links are allowed (HTTPS). Violated on link '{link}'. Information:  https://developer.vectrix.io/module-development/module-output".format(link=link))
+        if "https://" != link[:8]:
+            raise ValueError(
+                "Only https links are allowed to be included. Violated on link '{link}'. Information:  https://developer.vectrix.io/module-development/module-output".format(link=link))
 
     def get_state(self):
         """
@@ -250,7 +370,7 @@ class VectrixUtils:
                 "create_aws_session isn't allowed within local development, please handle yourself then implement once moving vectrix module to production")
 
         response = self.__post_vectrix_platform(endpoint="/v1/credentials/aws", data={
-                                                "aws_role_arn": aws_role_arn, "aws_external_id": aws_external_id})
+            "aws_role_arn": aws_role_arn, "aws_external_id": aws_external_id})
         aws_session = boto3.Session(
             aws_access_key_id=response["credentials"]["AccessKeyId"],
             aws_secret_access_key=response["credentials"]["SecretAccessKey"],
