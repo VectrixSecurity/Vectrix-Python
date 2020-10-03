@@ -1,4 +1,6 @@
-"""Vectrix Module Utilities"""
+"""
+Vectrix Module Utilities
+"""
 import requests
 import boto3
 import os
@@ -126,14 +128,25 @@ class VectrixUtils:
             ]
         }
 
+        test_keys = {
+            "asset": ["type", "id", "display_name", "link", "metadata"],
+            "issue": ["issue", "asset_id", "metadata"],
+            "event": ["event", "event_time", "display_name", "metadata"]
+        }
+
         test_items = {
             "asset": assets,
             "issue": issues,
             "event": events
         }
 
+        # Verify all inputted types are correct
         for key in test_items:
             for item in test_items[key]:
+                for item_key in item:
+                    if item_key not in test_keys[key]:
+                        raise ValueError("{key} dict does not allow key '{bad_key}'. Only allowed keys: {allowed_keys}. Information: https://developer.vectrix.io/module-development/module-output".format(
+                            key=key, bad_key=item_key, allowed_keys=str(test_keys[key])))
                 for elem in test_elems[key]:
                     if elem['key'] in item:
                         if not isinstance(item[elem['key']], type(elem['val'])):
