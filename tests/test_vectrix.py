@@ -153,6 +153,33 @@ def test_vectrix_output_bad_metadata_link():
         excinfo.value).split(".")[0]
 
 
+def test_vectrix_output_disallowed_event_key():
+    bad_event_key = [
+        {
+            "type": "aws_s3_bucket",
+            "event": "S3 Bucket Created",
+            "event_time": 1596843510,
+            "display_name": "Storage Bucket created",
+            "metadata": {
+                "aws_s3_bucket_name": {
+                    "priority": -1,
+                    "value": "sample-id"
+                },
+                "aws_s3_bucket_arn": {
+                    "priority": -1,
+                    "value": "sample-id"
+                }
+            }
+        }
+    ]
+
+    with pytest.raises(ValueError) as excinfo:
+        vectrix.output(assets=correct_asset, issues=correct_issue,
+                       events=bad_event_key)
+    assert "event dict does not allow key 'type'" == str(
+        excinfo.value).split(".")[0]
+
+
 def test_vectrix_set_state():
     assert vectrix.get_state() == {}
     vectrix.set_state({'1': '1'})
@@ -166,7 +193,8 @@ def test_vectrix_get_state():
 
 def test_vectrix_unset_state():
     vectrix.unset_state('2')
-    assert vectrix.get_state() == {'1': '1'}
+    vectrix.unset_state('1')
+    assert vectrix.get_state() == {}
 
 
 def test_vectrix_get_last_scan_results():
