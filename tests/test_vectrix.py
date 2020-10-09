@@ -61,6 +61,11 @@ def test_vectrix_output():
                    issues=correct_issue, events=correct_event)
 
 
+def test_vectrix_test_output():
+    vectrix._test_output(assets=correct_asset,
+                         issues=correct_issue, events=correct_event)
+
+
 def test_vectrix_output_bad_asset_type():
     bad_asset = [
         {
