@@ -5,7 +5,7 @@ correct_asset = [
     {
         "type": "aws_s3_bucket",
         "id": "arn:aws:s3:::sample-id",
-        "display_name": "Sample ID",
+        "display_name": "Bucket: Sample ID",
         "link": "https://localhost.com",
         "metadata": {
                 "aws_s3_bucket_name": {
@@ -33,7 +33,7 @@ correct_event = [
     {
         "event": "S3 Bucket Created",
         "event_time": 1596843510,
-        "display_name": "Storage Bucket created",
+        "display_name": "Bucket: Storage Bucket created",
         "metadata": {
             "aws_s3_bucket_name": {
                 "priority": -1,
@@ -71,7 +71,7 @@ def test_vectrix_output_bad_asset_type():
         {
             "type": "Aws_s3_bucket",  # Vendors aren't allowed to be caps
             "id": "arn:aws:s3:::sample-id",
-            "display_name": "Sample ID",
+            "display_name": "Bucket: Sample ID",
             "link": "https://localhost.com",
             "metadata": {
                     "aws_s3_bucket_name": {
@@ -93,7 +93,7 @@ def test_vectrix_output_bad_asset_type2():
         {
             "type": "aws_s3_Bucket",  # Resources aren't allowed to be PascalCase
             "id": "arn:aws:s3:::sample-id",
-            "display_name": "Sample ID",
+            "display_name": "Bucket: Sample ID",
             "link": "https://localhost.com",
             "metadata": {
                     "aws_s3_bucket_name": {
@@ -110,12 +110,34 @@ def test_vectrix_output_bad_asset_type2():
         excinfo.value).split(".")[0]
 
 
+def test_vectrix_output_bad_asset_display_name():
+    bad_asset = [
+        {
+            "type": "aws_s3_bucket",
+            "id": "arn:aws:s3:::sample-id",
+            "display_name": "Sample ID",  # Display names need to be key/values denoted by colons
+            "link": "https://localhost.com",
+            "metadata": {
+                    "aws_s3_bucket_name": {
+                        "priority": 50,
+                        "value": "sample-id"
+                    }
+            }
+        }
+    ]
+    with pytest.raises(ValueError) as excinfo:
+        vectrix.output(assets=bad_asset, issues=correct_issue,
+                       events=correct_event)
+    assert "asset dict key 'display_name' requires a colon that separates a key and value" == str(
+        excinfo.value).split(".")[0]
+
+
 def test_vectrix_output_bad_metadata():
     bad_asset_metadata = [
         {
             "type": "aws_s3_bucket",
             "id": "arn:aws:s3:::sample-id",
-            "display_name": "Sample ID",
+            "display_name": "Bucket: Sample ID",
             "link": "https://localhost.com",
             "metadata": {
                     "aws_s3_bucket_name": {
@@ -139,7 +161,7 @@ def test_vectrix_output_bad_metadata_link():
         {
             "type": "aws_s3_bucket",
             "id": "arn:aws:s3:::sample-id",
-            "display_name": "Sample ID",
+            "display_name": "Bucket: Sample ID",
             "link": "https://localhost.com",
             "metadata": {
                     "aws_s3_bucket_name": {
@@ -164,7 +186,7 @@ def test_vectrix_output_disallowed_event_key():
             "type": "aws_s3_bucket",
             "event": "S3 Bucket Created",
             "event_time": 1596843510,
-            "display_name": "Storage Bucket created",
+            "display_name": "Bucket: Storage Bucket created",
             "metadata": {
                 "aws_s3_bucket_name": {
                     "priority": -1,

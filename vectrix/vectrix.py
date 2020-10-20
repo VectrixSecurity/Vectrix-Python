@@ -154,6 +154,11 @@ class VectrixUtils:
                                 "{msg} dict key '{key}' value needs to be {val}".format(msg=key, key=elem['key'], val=type(elem['val']).__name__))
                         if elem['key'] == 'link':
                             self.__link_check(item[elem['key']])
+                        if elem['key'] == 'display_name':
+                            check_display_name = item[elem['key']]
+                            if len(check_display_name) > 0 and ":" not in check_display_name:
+                                raise ValueError(
+                                    "{msg} dict key 'display_name' requires a colon that separates a key and value. Information: https://developer.vectrix.io/module-development/module-output#display-name-convention".format(msg=key))
                         if elem['key'] == "metadata":
                             metadata = item['metadata']
                             metadata_keys_to_check = [
