@@ -2,17 +2,17 @@ from distutils.core import setup
 setup(
     name='vectrix',
     packages=['vectrix'],
-    version='0.1.8',
+    version='0.1.9',
     license='MIT',
     description='Vectrix Developer Python Package',
     author='Matthew Lewis',
     author_email='matthew.lewis@vectrix.io',
     url='https://github.com/VectrixSecurity/Vectrix-Python',
-    download_url='https://github.com/VectrixSecurity/Vectrix-Python/archive/v0.1.8.tar.gz',
+    download_url='https://github.com/VectrixSecurity/Vectrix-Python/archive/v0.1.9.tar.gz',
     keywords=['vectrix', 'vectrixio', 'vectrix.io', 'vectrix module'],
     install_requires=[
         'requests==2.22.0',
-        'boto3==1.14.38',
+        'boto3==1.15.17',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
