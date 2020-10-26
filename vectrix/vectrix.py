@@ -163,6 +163,7 @@ class VectrixUtils:
                             metadata = item['metadata']
                             metadata_keys_to_check = [
                                 {"key": "priority", "val": 1},
+                                # These are allowed to be str and lists (account for below)
                                 {"key": "value", "val": "str"},
                                 {"key": "link", "val": "str"}
                             ]
@@ -175,9 +176,18 @@ class VectrixUtils:
                                     if check_key['key'] not in metadata[metadata_key] and check_key['key'] != "link":
                                         raise ValueError(
                                             "all metadata elements are required to have '{key}' key. Information: https://developer.vectrix.io/module-development/module-output".format(key=check_key['key']))
-                                    if check_key['key'] != "link" and not isinstance(metadata[metadata_key][check_key['key']], type(check_key['val'])):
+                                    if check_key['key'] != "value" and check_key['key'] != "link" and not isinstance(metadata[metadata_key][check_key['key']], type(check_key['val'])):
                                         raise ValueError(
                                             "metadata element {elem} key '{key}' value needs to be {val}".format(elem=metadata_key, key=check_key['key'], val=type(check_key['val']).__name__))
+                                    if check_key['key'] == "value":
+                                        if not isinstance(metadata[metadata_key][check_key['key']], type("")) and not isinstance(metadata[metadata_key][check_key['key']], type([])):
+                                            raise ValueError("metadata element {elem} key 'value' needs to be either (1) str or (2) list of str's".format(
+                                                elem=metadata_key, key=check_key['key'], val=type(check_key['val']).__name__))
+                                        if isinstance(metadata[metadata_key][check_key['key']], type([])):
+                                            for metadata_check_key_list_elem in metadata[metadata_key][check_key['key']]:
+                                                if not isinstance(metadata_check_key_list_elem, type("")):
+                                                    raise ValueError("metadata element {elem} key 'value' can be list, but each element in the list has to be 'str'. Violated with list element value of: {violation}".format(
+                                                        violation=str(metadata_check_key_list_elem), elem=metadata_key, key=check_key['key'], val=type(check_key['val']).__name__))
 
                                 for inputted_key in metadata[metadata_key]:
                                     if inputted_key not in metadata_keys:
@@ -364,7 +374,7 @@ class VectrixUtils:
 
     def _test_output(self, *ignore, assets=None, issues=None, events=None):
         """
-        __test_output takes in the same parameters as output and acts very similiarly, however it will print out top level information instead of all assets, issues, and events identified. 
+        __test_output takes in the same parameters as output and acts very similiarly, however it will print out top level information instead of all assets, issues, and events identified.
         """
         final = {"assets": {}, "issues": {}, "events": {}}
         for asset in assets:

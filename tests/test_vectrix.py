@@ -156,6 +156,54 @@ def test_vectrix_output_bad_metadata():
         excinfo.value).split(".")[0]
 
 
+def test_vectrix_output_bad_metadata_value():
+    bad_asset_metadata = [
+        {
+            "type": "aws_s3_bucket",
+            "id": "arn:aws:s3:::sample-id",
+            "display_name": "Bucket: Sample ID",
+            "link": "https://localhost.com",
+            "metadata": {
+                    "aws_s3_bucket_name": {
+                        # Priority is only allowed to be between -1 and 100 (inclusive)
+                        "priority": -2,
+                        "value": {"sample-id"}
+                    }
+            }
+        }
+    ]
+
+    with pytest.raises(ValueError) as excinfo:
+        vectrix.output(assets=bad_asset_metadata, issues=correct_issue,
+                       events=correct_event)
+    assert "metadata element aws_s3_bucket_name key 'value' needs to be either (1) str or (2) list of str's" == str(
+        excinfo.value).split(".")[0]
+
+
+def test_vectrix_output_bad_metadata_value_2():
+    bad_asset_metadata = [
+        {
+            "type": "aws_s3_bucket",
+            "id": "arn:aws:s3:::sample-id",
+            "display_name": "Bucket: Sample ID",
+            "link": "https://localhost.com",
+            "metadata": {
+                    "aws_s3_bucket_name": {
+                        # Priority is only allowed to be between -1 and 100 (inclusive)
+                        "priority": -2,
+                        "value": [{"sample-id"}]
+                    }
+            }
+        }
+    ]
+
+    with pytest.raises(ValueError) as excinfo:
+        vectrix.output(assets=bad_asset_metadata, issues=correct_issue,
+                       events=correct_event)
+    assert "metadata element aws_s3_bucket_name key 'value' can be list, but each element in the list has to be 'str'" == str(
+        excinfo.value).split(".")[0]
+
+
 def test_vectrix_output_bad_metadata_link():
     bad_asset_metadata = [
         {
