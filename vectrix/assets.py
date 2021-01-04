@@ -1,9 +1,11 @@
-from metadata import MetadataElement, MetadataPriority
+from .metadata import MetadataElement, MetadataPriority
 
 """Represents a vectrix asset.
 
 https://developer.vectrix.io/dev/components/output#assets
 """
+
+
 class Asset():
     def __init__(self):
         self._display_name = None
@@ -41,6 +43,7 @@ class Asset():
 
     This should be invoked before adding the Asset to the asset output list
     """
+
     def to_dict(self):
         result = {
             "display_name": self.display_name,
@@ -53,4 +56,3 @@ class Asset():
             result['link'] = self.link
 
         return result
-        
