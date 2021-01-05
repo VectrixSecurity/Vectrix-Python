@@ -2,7 +2,7 @@ from tests import Issue
 
 correct_issue = {
     "issue": "Public S3 Bucket",
-    "asset_id": ["arn:aws:s3:::sample-id"],
+    "asset_id": ["arn:aws:s3:::sample-id-model"],
     "metadata": {
         "aws_s3_bucket_name": {
             "priority": -1,
@@ -16,7 +16,7 @@ class TestIssue(Issue):
     def __init__(self):
         super().__init__()
         self._issue = "Public S3 Bucket"
-        self._asset_id = ["arn:aws:s3:::sample-id"]
+        self._asset_id = ["arn:aws:s3:::sample-id-model"]
         self._metadata = {
             "aws_s3_bucket_name": {
                 "priority": -1,

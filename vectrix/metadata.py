@@ -6,8 +6,6 @@ from enum import IntEnum
 
 https://developer.vectrix.io/dev/components/output#metadata-structure
 """
-
-
 class MetadataElement():
     def __init__(self, priority, value, link=None):
         self._priority = priority
@@ -38,7 +36,6 @@ class MetadataElement():
 
     This should be invoked before adding the Metadata to the Asset or Issue
     """
-
     def to_dict(self):
         result = {
             'priority': int(self.priority),
@@ -55,8 +52,6 @@ class MetadataElement():
 
 https://developer.vectrix.io/dev/components/output#metadata-priority-system
 """
-
-
 class MetadataPriority(IntEnum):
     DO_NOT_SURFACE = -1
     LOW = 0

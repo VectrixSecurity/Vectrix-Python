@@ -8,6 +8,10 @@ import json
 import logging
 import traceback
 
+from .assets import Asset
+from .events import Event
+from .issues import Issue
+
 
 class VectrixUtils:
     def __init__(self):
@@ -305,6 +309,24 @@ class VectrixUtils:
             raise ValueError(
                 "Only https links are allowed to be included. Violated on link '{link}'. Information:  https://developer.vectrix.io/module-development/module-output".format(link=link))
 
+    def __enforce_dict_input(self, assets, issues, events):
+        """Check if Asset, Issue, or Event is an instance of its associated class. If so, convert to dict for further processing"""
+
+        if assets != None:
+            for i in range(len(assets)):
+                if isinstance(assets[i], Asset):
+                    assets[i] = assets[i].to_dict()
+
+        if issues != None:
+            for i in range(len(issues)):
+                if isinstance(issues[i], Issue):
+                    issues[i] = issues[i].to_dict()
+
+        if events != None:
+            for i in range(len(events)):
+                if isinstance(events[i], Event):
+                    events[i] = events[i].to_dict()
+
     def get_state(self):
         """
         Retrieve state within the vectrix module. Utilize this method to retrieve state that was previously set with set_state()
@@ -355,6 +377,7 @@ class VectrixUtils:
         :params: events (list) - Keyword argument of the events identified during a scan.
         :returns: (No return)
         """
+        self.__enforce_dict_input(assets, issues, events)
         self.__output_type_check(assets, issues, events)
         if self.production_mode is False:
             print("(DEV MODE) Vectrix Module Output:")
@@ -376,6 +399,7 @@ class VectrixUtils:
         """
         __test_output takes in the same parameters as output and acts very similiarly, however it will print out top level information instead of all assets, issues, and events identified.
         """
+        self.__enforce_dict_input(assets, issues, events)
         final = {"assets": {}, "issues": {}, "events": {}}
         for asset in assets:
             if asset['type'] in final['assets']:

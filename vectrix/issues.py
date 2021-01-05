@@ -1,11 +1,7 @@
-from .metadata import MetadataElement, MetadataPriority
-
 """Represents a vectrix issue.
 
 https://developer.vectrix.io/dev/components/output#issues
 """
-
-
 class Issue():
     def __init__(self):
         self._asset_id = None
@@ -31,7 +27,6 @@ class Issue():
 
     This should be invoked before adding the Issue to the issue output list
     """
-
     def to_dict(self):
         return {
             'asset_id': self.asset_id,
