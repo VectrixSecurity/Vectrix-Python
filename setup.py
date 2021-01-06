@@ -2,7 +2,7 @@ from distutils.core import setup
 setup(
     name='vectrix',
     packages=['vectrix'],
-    version='0.2.0',
+    version='0.2.1',
     license='MIT',
     description='Vectrix Developer Python Package',
     author='Matthew Lewis',

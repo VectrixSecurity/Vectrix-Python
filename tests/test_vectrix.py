@@ -1,6 +1,10 @@
 import pytest
 from tests import vectrix
 
+from .test_assets import TestAsset
+from .test_issues import TestIssue
+from .test_events import TestEvent
+
 correct_asset = [
     {
         "type": "aws_s3_bucket",
@@ -254,7 +258,6 @@ def test_vectrix_output_disallowed_event_key():
     assert "event dict does not allow key 'type'" == str(
         excinfo.value).split(".")[0]
 
-
 def test_vectrix_set_state():
     assert vectrix.get_state() == {}
     vectrix.set_state({'1': '1'})
@@ -277,3 +280,8 @@ def test_vectrix_get_last_scan_results():
     check_val = {"assets": correct_asset,
                  "issues": correct_issue, "events": correct_event}
     assert results == check_val
+
+def test_vectrix_output_allow_typed_input():
+    vectrix.output(assets=[TestAsset()] + correct_asset,
+                   issues=[TestIssue()] + correct_issue, 
+                   events=[TestEvent()] + correct_event)
