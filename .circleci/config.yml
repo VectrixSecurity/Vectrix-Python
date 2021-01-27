@@ -6,6 +6,7 @@ jobs:
     docker:
       - image: circleci/python:3.8
     steps:
+      - checkout
       - run:
           command: |
             sudo pip3 install setuptools wheel twine
