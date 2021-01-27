@@ -1,6 +1,33 @@
 version: 2.1
 orbs:
   pypi: pennlabs/pypi-tools@0.0.4
+jobs:
+  publish:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - run:
+          command: |
+            sudo pip3 install setuptools wheel twine
+          name: Install dependencies
+      - run:
+          command: |
+            python3 setup.py verify
+          name: Verify git tag vs. version
+      - run:
+          command: |
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "username = $PYPI_USERNAME" >> ~/.pypirc
+            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+          name: Init .pypirc
+      - run:
+          command: |
+            python3 setup.py sdist
+          name: Create packages
+      - run:
+          command: |
+            twine upload dist/*
+          name: Upload to pypi
 workflows:
   build-and-publish:
     jobs:
