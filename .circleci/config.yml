@@ -9,9 +9,7 @@ workflows:
             tags:
               only: /.*/
       - pypi/publish:
-          context:
-            - CODECOV
-            - PYPI
+          context: PYPI
           filters:
             branches:
               ignore: /.*/
