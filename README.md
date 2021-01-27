@@ -1,6 +1,6 @@
+[![CircleCI](https://circleci.com/gh/VectrixSecurity/Vectrix-Python/tree/master.svg?style=svg&circle-token=f58ec2c96369a1e884f57528947e52af1c446874)](LINK)
 [![Actions Status](https://github.com/VectrixSecurity/Vectrix-Python/workflows/Python%20package/badge.svg)](https://github.com/VectrixSecurity/Vectrix-Python/actions)
 [![codecov](https://codecov.io/gh/VectrixSecurity/Vectrix-Python/branch/master/graph/badge.svg?token=UCJTO5CV9J)](https://codecov.io/gh/VectrixSecurity/Vectrix-Python)
-[![CircleCI](https://circleci.com/gh/VectrixSecurity/Vectrix-Python/tree/master.svg?style=svg&circle-token=f58ec2c96369a1e884f57528947e52af1c446874)](LINK)
 
 # Overview
 
