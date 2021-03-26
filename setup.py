@@ -5,7 +5,7 @@ from setuptools import setup
 from setuptools.command.install import install
 
 # Package Version
-VERSION = "0.2.2"
+VERSION = "0.2.3"
 
 
 def readme():
