@@ -13,10 +13,6 @@ jobs:
           name: Install dependencies
       - run:
           command: |
-            python3 setup.py verify
-          name: Verify git tag vs. version
-      - run:
-          command: |
             echo -e "[pypi]" >> ~/.pypirc
             echo -e "username = $PYPI_USERNAME" >> ~/.pypirc
             echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
