@@ -30,7 +30,7 @@ class VerifyVersionCommand(install):
 
 setup(
     name='vectrix',
-    packages=['vectrix'],
+    packages=['vectrix', 'vectrix.graphql'],
     version=VERSION,
     license='MIT',
     description='Vectrix Developer Python Package',
