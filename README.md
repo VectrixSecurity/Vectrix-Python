@@ -3,9 +3,9 @@
 
 # Overview
 
-Vectrix is a platform and marketplace that allows security teams and companies to easily bootstrap their detection and response capabilities across their cloud environments and third-party services in minutes.
+Vectrix is a platform that allows security teams and companies to easily bootstrap their detection capabilities across their cloud environments and third-party services in minutes.
 
-This is possible thanks to Vectrix Modules, the individual, automated scripts and tools that are used to scan for a predetermined security issue, risk, or misconfiguration.
+This is possible thanks to Vectrix Detection Packs, the individual, automated scripts and tools that are used to scan for a predetermined security issue, risk, or misconfiguration.
 
 Modules found on the Vectrix Marketplace are created by security engineers and developers through a development process managed by the Vectrix team. Development includes writing the scan logic that enables a module to detect (and often remediate) when an issue is identified.
 
