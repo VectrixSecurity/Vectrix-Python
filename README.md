@@ -11,7 +11,7 @@ Modules found on the Vectrix Marketplace are created by security engineers and d
 
 # Details
 
-This is our Python 3 SDK for creating vectrix modules. For more information on creating a module yourself, please visit: https://developer.vectrix.io
+This is our Python 3 SDK for creating vectrix detection packs. For more information on creating a module yourself, please visit: https://developer.vectrix.io
 
 # Installation
 
