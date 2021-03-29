@@ -5,7 +5,7 @@ from setuptools import setup
 from setuptools.command.install import install
 
 # Package Version
-VERSION = "0.2.3"
+VERSION = "0.2.4"
 
 
 def readme():
@@ -42,6 +42,7 @@ setup(
     install_requires=[
         'requests==2.22.0',
         'boto3==1.15.17',
+        'sentry-sdk==1.0.0'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
