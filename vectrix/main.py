@@ -15,6 +15,7 @@ from .graphql.client import graphql_client
 from .graphql.utils import vectrix_item_converter
 from .checks import output_type_check
 from .settings import PRODUCTION_MODE
+from .sentry import activate_sentry
 
 
 class VectrixUtils:
@@ -25,11 +26,15 @@ class VectrixUtils:
             logging.basicConfig(
                 filename=(os.getcwd() + '/.vectrix/vectrix-detection-pack.log'), level=logging.WARNING)  # TODO Test logging level change with .error and .warning
         else:
+            activate_sentry(os.environ.get('SENTRY_DSN', None))
             self.deployment_id = os.environ.get('DEPLOYMENT_ID')
             self.deployment_key = os.environ.get('DEPLOYMENT_KEY')
             self.auth_headers = {
                 "DEPLOYMENT_ID": self.deployment_id, "DEPLOYMENT_KEY": self.deployment_key}
         self.state = self.__init_state()
+
+        # There's some legacy reliance on production_mode being held within a class var
+        self.production_mode = PRODUCTION_MODE
 
     def __init_state(self):
         """
@@ -173,7 +178,8 @@ class VectrixUtils:
             deployment_scan = response.get("deploymentScanEntryCreate", None)
             errors = deployment_scan.get("errors", None)
             if len(errors) != 0:
-                raise Exception(f"Failed outputting scan results to Vectrix API: {str(errors)}")
+                raise Exception(
+                    f"Failed outputting scan results to Vectrix API: {str(errors)}")
 
     def get_credentials(self):
         """
@@ -190,7 +196,8 @@ class VectrixUtils:
             deployment = response.get("deployment", None)
             credentials = json.loads(deployment.get("credentials", None))
             if credentials is None:
-                raise Exception("Failed retrieving credentials from Vectrix API")
+                raise Exception(
+                    "Failed retrieving credentials from Vectrix API")
             return credentials
 
     def create_aws_session(self, aws_role_arn=None, aws_external_id=None):
@@ -210,12 +217,14 @@ class VectrixUtils:
             "awsExternalId": aws_external_id
         }
 
-        response = graphql_client(route=GraphQLRoutes.CREATE_AWS_SESSION, variables={"input": aws_variables})
+        response = graphql_client(route=GraphQLRoutes.CREATE_AWS_SESSION, variables={
+                                  "input": aws_variables})
         mutation = response.get("awsSessionCreate", None)
         aws_session = mutation.get("awsSession", None)
         errors = mutation.get("errors", None)
         if len(errors) != 0:
-            raise Exception(f"Error retreiving AWS Session from Vectrix API: {str(errors)}")
+            raise Exception(
+                f"Error retreiving AWS Session from Vectrix API: {str(errors)}")
 
         access_key_id = aws_session.get("accessKeyId")
         secret_access_key = aws_session.get("secretAccessKey")
@@ -241,7 +250,8 @@ class VectrixUtils:
                     data = json.load(f)
                 return data
         else:
-            response = graphql_client(route=GraphQLRoutes.GET_LAST_SCAN_RESULTS)
+            response = graphql_client(
+                route=GraphQLRoutes.GET_LAST_SCAN_RESULTS)
             scan_results = response.get("deploymentLastScanResults")
             return {
                 "assets": json.loads(scan_results['assets']),
@@ -259,11 +269,13 @@ class VectrixUtils:
             "logVisibility": visibility,
             "logMessage": message
         }
-        response = graphql_client(route=GraphQLRoutes.CREATE_LOG, variables={"input": api_input})
+        response = graphql_client(
+            route=GraphQLRoutes.CREATE_LOG, variables={"input": api_input})
         mutation = response.get("deploymentLogCreate")
         errors = mutation.get("errors")
         if len(errors) != 0:
-            raise Exception(f"Error creating log in Vectrix API: {str(errors)}")
+            raise Exception(
+                f"Error creating log in Vectrix API: {str(errors)}")
 
     def log(self, message: str):
         """
@@ -278,7 +290,8 @@ class VectrixUtils:
         if PRODUCTION_MODE is False:
             logging.warning("VECTRIX LOG (INTERNAL): " + message)
         else:
-            self.__log_sender(log_type="LOG", visibility="INTERNAL", message=message)
+            self.__log_sender(
+                log_type="LOG", visibility="INTERNAL", message=message)
 
     def external_log(self, message: str):
         """
@@ -293,7 +306,8 @@ class VectrixUtils:
         if PRODUCTION_MODE is False:
             logging.warning("VECTRIX LOG (EXTERNAL): " + message)
         else:
-            self.__log_sender(log_type="LOG", visibility="EXTERNAL", message=message)
+            self.__log_sender(
+                log_type="LOG", visibility="EXTERNAL", message=message)
 
     def error(self, error: str):
         """
@@ -308,7 +322,8 @@ class VectrixUtils:
         if PRODUCTION_MODE is False:
             logging.error("VECTRIX ERROR (INTERNAL): " + error)
         else:
-            self.__log_sender(log_type="ERROR", visibility="INTERNAL", message=error)
+            self.__log_sender(log_type="ERROR",
+                              visibility="INTERNAL", message=error)
 
     def external_error(self, error: str):
         """
@@ -323,4 +338,5 @@ class VectrixUtils:
         if PRODUCTION_MODE is False:
             logging.error("VECTRIX ERROR (EXTERNAL): " + error)
         else:
-            self.__log_sender(log_type="ERROR", visibility="EXTERNAL", message=error)
+            self.__log_sender(log_type="ERROR",
+                              visibility="EXTERNAL", message=error)
