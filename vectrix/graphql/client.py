@@ -17,7 +17,7 @@ def graphql_client(route: GraphQLRoutes, variables: dict = {}):
         formatted_variables = snake_case_to_camel_case(variables)
 
         response = requests.post(
-            API_URL, json={"query": route, "variables": formatted_variables})
+            API_URL, json={"query": route.value, "variables": formatted_variables})
 
         if response.status_code == 400:
             raise Exception(
