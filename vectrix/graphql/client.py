@@ -1,3 +1,4 @@
+import os
 import logging
 
 import requests
@@ -16,8 +17,10 @@ def graphql_client(route: GraphQLRoutes, variables: dict = {}):
     try:
         formatted_variables = snake_case_to_camel_case(variables)
 
+        headers = {'X-DEPLOYMENT-ID': os.environ.get(
+            "DEPLOYMENT_ID", ""), 'X-DEPLOYMENT-KEY': os.environ.get("DEPLOYMENT_KEY", "")}
         response = requests.post(
-            API_URL, json={"query": route.value, "variables": formatted_variables})
+            API_URL, json={"query": route.value, "variables": formatted_variables}, headers=headers)
 
         if response.status_code == 400:
             raise Exception(
