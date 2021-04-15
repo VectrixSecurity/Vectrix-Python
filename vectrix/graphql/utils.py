@@ -13,11 +13,11 @@ def snake_case_to_camel_case(input):
     if isinstance(input, str):
         return convert(input)
     elif isinstance(input, dict):
-        print(input)
         formatted_dict = {}
         for item in input:
             if isinstance(input[item], dict):
-                formatted_dict[convert(item)] = snake_case_to_camel_case(input[item])
+                formatted_dict[convert(item)] = snake_case_to_camel_case(
+                    input[item])
             else:
                 formatted_dict[convert(item)] = input[item]
         return formatted_dict
